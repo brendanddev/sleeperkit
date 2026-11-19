@@ -195,3 +195,15 @@ export interface PlayerWeekView {
     projected_points: number | null;
     snap_percentage: number | null;
 }
+
+// Derived. Each teams record if every week they had played all nine opponents
+// instead of one. The gap against their real record is luck, not skill.
+export interface AllPlayView {
+    roster_id: number;
+    team_name: string;
+    all_play_wins: number;
+    all_play_losses: number;
+    all_play_ties: number;
+    actual_wins: number;
+    actual_losses: number;
+}

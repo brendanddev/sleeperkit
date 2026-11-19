@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
-import { FANTASY_POSITIONS, type DepthChart, type FantasyPosition, type FreeAgentView, type League, type LeagueStandings, type MatchupEntry, type NflState, type Player, type PlayerWeekEntry, type PlayerWeekView, type Roster, type RosterView, type RosterWithPlayers, type StandingsEntry, type TrendingEntry, type TrendingView, type User, type WeeklyEntries, type WeeklyLeaderEntry } from "./types.js";
+import { FANTASY_POSITIONS, type AllPlayView, type DepthChart, type FantasyPosition, type FreeAgentView, type League, type LeagueStandings, type MatchupEntry, type NflState, type Player, type PlayerWeekEntry, type PlayerWeekView, type Roster, type RosterView, type RosterWithPlayers, type StandingsEntry, type TrendingEntry, type TrendingView, type User, type WeeklyEntries, type WeeklyLeaderEntry } from "./types.js";
 import { combinePoints, compareByStandings, getBenchIds } from "./util.js";
 
 const DATA_DIR = process.env.FANTALYZER_DATA_DIR ?? "data";

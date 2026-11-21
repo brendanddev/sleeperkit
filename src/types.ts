@@ -1,3 +1,40 @@
+export const NFL_TEAMS = [
+    "ARI",
+    "ATL",
+    "BAL",
+    "BUF",
+    "CAR",
+    "CHI",
+    "CIN",
+    "CLE",
+    "DAL",
+    "DEN",
+    "DET",
+    "GB",
+    "HOU",
+    "IND",
+    "JAX",
+    "KC",
+    "LV",
+    "LAC",
+    "LAR",
+    "MIA",
+    "MIN",
+    "NE",
+    "NO",
+    "NYG",
+    "NYJ",
+    "PHI",
+    "PIT",
+    "SF",
+    "SEA",
+    "TB",
+    "TEN",
+    "WAS"
+];
+
+export type NflTeam = typeof NFL_TEAMS[number];
+
 // Current NFL week and season.
 export interface NflState {
     week: number;
@@ -6,6 +43,9 @@ export interface NflState {
     season: string;
     season_type: string;
 }
+
+// Which part of the NFL season a stats or projections request covers.
+export type SeasonType = "regular" | "post" | "pre";
 
 // League settings and metadata.
 export interface League {

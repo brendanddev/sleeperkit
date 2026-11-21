@@ -1,21 +1,29 @@
 import { join } from "node:path";
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
-import { FANTASY_POSITIONS, type DepthChart, type FantasyPosition, type League, type MatchupEntry, type NflState, type Player, type PlayerWeekEntry, type Roster, type TrendingEntry, type User, type WeeklyEntries, type WeeklyLeaderEntry } from "./types.js";
+import { FANTASY_POSITIONS, type DepthChart, type FantasyPosition, type League, type MatchupEntry, type NflState, type NflTeam, type Player, type PlayerWeekEntry, type Roster, type SeasonType, type TrendingEntry, type User, type WeeklyEntries, type WeeklyLeaderEntry } from "./types.js";
 
-const DATA_DIR = process.env.FANTALYZER_DATA_DIR ?? "data";
-const PLAYERS_FILE = join(DATA_DIR, "players.json");
 const PLAYERS_CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 const SLEEPER_API = "https://api.sleeper.app/v1";
 const SLEEPER_PRIVATE_API = "https://api.sleeper.com";
 
+export interface SleeperClientOptions {
+    // Base URL for the documented API. Rarely needs changing.
+    baseUrl?: string;
+    // Directory the player cache is written to. Relative paths resolve
+    // against the process working directory.
+    cacheDir?: string;
+}
+
 export class SleeperClient {
     private baseUrl: string;
+    private playersFile: string;
     private playerCache: Record<string, Player> | null = null;
 
-    constructor(baseUrl: string = SLEEPER_API) {
-        this.baseUrl = baseUrl;
+    constructor(options: SleeperClientOptions = {}) {
+        this.baseUrl = options.baseUrl ?? SLEEPER_API;
+        this.playersFile = join(options.cacheDir ?? "data", "players.json");
     }
 
     public async get<T>(endpoint: string, base: string = this.baseUrl): Promise<T> {
@@ -30,8 +38,8 @@ export class SleeperClient {
     // and stores in memory.
     private async refreshPlayerCache(): Promise<Record<string, Player>> {
         const players = await this.get<Record<string, Player>>("players/nfl");
-        await mkdir(dirname(PLAYERS_FILE), { recursive: true });
-        await writeFile(PLAYERS_FILE, JSON.stringify(players), "utf-8");
+        await mkdir(dirname(this.playersFile), { recursive: true });
+        await writeFile(this.playersFile, JSON.stringify(players), "utf-8");
         this.playerCache = players;
         return players;
     }
@@ -68,7 +76,7 @@ export class SleeperClient {
     }
 
     // Lookup from user_id to display_name for everyone in the league.
-    private async getUserNames(leagueId: string): Promise<Record<string, string>> {
+    async getUserNames(leagueId: string): Promise<Record<string, string>> {
         const users = await this.getAllUsers(leagueId);
         const userNames: Record<string, string> = {};
         users.forEach(user => userNames[user.user_id] = user.display_name);
@@ -77,7 +85,7 @@ export class SleeperClient {
 
     // Turns player IDs into Player objects. IDs not in the map are dropped,
     // so the result can be shorter than the input.
-    private async resolvePlayers(ids: string[]): Promise<Player[]> {
+    async resolvePlayers(ids: string[]): Promise<Player[]> {
         const players: Player[] = [];
         const playerMap = await this.getPlayers();
 
@@ -93,9 +101,9 @@ export class SleeperClient {
     async getPlayers(forceRefresh = false): Promise<Record<string, Player>> {
         if (forceRefresh) return this.refreshPlayerCache();
         if (this.playerCache) return this.playerCache;
-        if (await this.isCacheStale(PLAYERS_FILE, PLAYERS_CACHE_MAX_AGE_MS)) return this.refreshPlayerCache();
+        if (await this.isCacheStale(this.playersFile, PLAYERS_CACHE_MAX_AGE_MS)) return this.refreshPlayerCache();
 
-        const raw = await readFile(PLAYERS_FILE, "utf-8");
+        const raw = await readFile(this.playersFile, "utf-8");
         const players = JSON.parse(raw) as Record<string, Player>;
         this.playerCache = players;
         return players;
@@ -159,8 +167,8 @@ export class SleeperClient {
         return Object.values(playerMap).filter(player => !rosteredPlayers.has(player.player_id));
     }
 
-    async getSnapPercentageForWeek(playerId: string, week: number): Promise<number | undefined> {
-        const playerStats = await this.getPlayerStatsByWeek(playerId);
+    async getSnapPercentageForWeek(playerId: string, season: number, week: number, seasonType: SeasonType = "regular"): Promise<number | undefined> {
+        const playerStats = await this.getPlayerStatsByWeek(playerId, season, seasonType);
         const weekEntry = playerStats[String(week)];
 
         if (!weekEntry) {
@@ -183,25 +191,34 @@ export class SleeperClient {
 
     // Uses Sleeper private API, undocumented, may break without notice.
 
-    async getDepthChart(team: string): Promise<DepthChart> {
+    async getDepthChart(team: NflTeam): Promise<DepthChart> {
         return this.get<DepthChart>(`players/nfl/${team}/depth_chart`, SLEEPER_PRIVATE_API);
     }
 
-    async getPlayerStats(playerId: string): Promise<PlayerWeekEntry> {
-        return this.get<PlayerWeekEntry>(`stats/nfl/player/${playerId}?season_type=regular&season=2026`, SLEEPER_PRIVATE_API);
+    async getPlayerStats(playerId: string, season: number, seasonType: SeasonType = "regular"): Promise<PlayerWeekEntry> {
+        return this.get<PlayerWeekEntry>(
+            `stats/nfl/player/${playerId}?season_type=${seasonType}&season=${season}`,
+            SLEEPER_PRIVATE_API
+        );
     }
 
-    async getPlayerStatsByWeek(playerId: string): Promise<WeeklyEntries> {
-        return this.get<WeeklyEntries>(`stats/nfl/player/${playerId}?season_type=regular&season=2026&grouping=week`, SLEEPER_PRIVATE_API);
+    async getPlayerStatsByWeek(playerId: string, season: number, seasonType: SeasonType = "regular"): Promise<WeeklyEntries> {
+        return this.get<WeeklyEntries>(
+            `stats/nfl/player/${playerId}?season_type=${seasonType}&season=${season}&grouping=week`,
+            SLEEPER_PRIVATE_API
+        );
     }
 
-    async getPlayerProjectionsByWeek(playerId: string): Promise<WeeklyEntries> {
-        return this.get<WeeklyEntries>(`projections/nfl/player/${playerId}?season_type=regular&season=2026&grouping=week`, SLEEPER_PRIVATE_API);
+    async getPlayerProjectionsByWeek(playerId: string, season: number, seasonType: SeasonType = "regular"): Promise<WeeklyEntries> {
+        return this.get<WeeklyEntries>(
+            `projections/nfl/player/${playerId}?season_type=${seasonType}&season=${season}&grouping=week`,
+            SLEEPER_PRIVATE_API
+        );
     }
 
-    async getWeeklyLeaders(season: number, week: number, positions: FantasyPosition[]): Promise<WeeklyLeaderEntry[]> {
+    async getWeeklyLeaders(season: number, week: number, positions: FantasyPosition[], seasonType: SeasonType = "regular"): Promise<WeeklyLeaderEntry[]> {
         const posParams = positions.map(pos => `position[]=${pos}`).join('&');
-        const query = `?season_type=regular&${posParams}&order_by=pts_ppr`;
+        const query = `?season_type=${seasonType}&${posParams}&order_by=pts_ppr`;
         return this.get<WeeklyLeaderEntry[]>(`stats/nfl/${season}/${week}${query}`, SLEEPER_PRIVATE_API);
     }
 }

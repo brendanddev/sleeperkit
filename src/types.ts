@@ -47,6 +47,16 @@ export interface NflState {
 // Which part of the NFL season a stats or projections request covers.
 export type SeasonType = "regular" | "post" | "pre";
 
+// A single game in the NFL schedule. A team absent from a week is on bye.
+export interface ScheduleGame {
+    status: "complete" | "pre_game";
+    date: string;
+    home: NflTeam;
+    week: number;
+    game_id: string;
+    away: NflTeam;
+}
+
 // League settings and metadata.
 export interface League {
     league_id: string;
@@ -159,13 +169,15 @@ export interface EmbeddedPlayer {
     injury_status: string | null;
 }
 
-// One players week from the bulk stats endpoint, ranked by pts_ppr.
-export interface WeeklyLeaderEntry {
+// One players stats or projections from the bulk endpoints, with the player
+// attached. Covers both weekly and season-wide; week is null for season totals.
+export interface StatsEntry {
     player_id: string;
-    week: number;
+    week: number | null;
     season: string;
     team: string;
     opponent: string | null;
+    category: "stat" | "proj";
     game_id: string;
     date: string;
     stats: Stats;

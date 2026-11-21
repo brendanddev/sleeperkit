@@ -1,10 +1,9 @@
 import { join } from "node:path";
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
-import { FANTASY_POSITIONS, type DepthChart, type FantasyPosition, type League, type MatchupEntry, type NflState, type NflTeam, type Player, type PlayerWeekEntry, type Roster, type SeasonType, type TrendingEntry, type User, type WeeklyEntries, type WeeklyLeaderEntry } from "./types.js";
+import { FANTASY_POSITIONS, type DepthChart, type FantasyPosition, type League, type MatchupEntry, type NflState, type NflTeam, type Player, type PlayerWeekEntry, type Roster, type ScheduleGame, type SeasonType, type TrendingEntry, type User, type WeeklyEntries, type StatsEntry } from "./types.js";
 
 const PLAYERS_CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
-
 const SLEEPER_API = "https://api.sleeper.app/v1";
 const SLEEPER_PRIVATE_API = "https://api.sleeper.com";
 
@@ -216,9 +215,31 @@ export class SleeperClient {
         );
     }
 
-    async getWeeklyLeaders(season: number, week: number, positions: FantasyPosition[], seasonType: SeasonType = "regular"): Promise<WeeklyLeaderEntry[]> {
+    async getWeeklyLeaders(season: number, week: number, positions: FantasyPosition[], seasonType: SeasonType = "regular"): Promise<StatsEntry[]> {
         const posParams = positions.map(pos => `position[]=${pos}`).join('&');
         const query = `?season_type=${seasonType}&${posParams}&order_by=pts_ppr`;
-        return this.get<WeeklyLeaderEntry[]>(`stats/nfl/${season}/${week}${query}`, SLEEPER_PRIVATE_API);
+        return this.get<StatsEntry[]>(`stats/nfl/${season}/${week}${query}`, SLEEPER_PRIVATE_API);
+    }
+
+    async getSchedule(season: number, seasonType: SeasonType = "regular"): Promise<ScheduleGame[]> {
+        return this.get<ScheduleGame[]>(`schedule/nfl/${seasonType}/${season}`, SLEEPER_PRIVATE_API);
+    }
+
+    async getProjectionLeaders(season: number, week: number, positions: FantasyPosition[], seasonType: SeasonType = "regular"): Promise<StatsEntry[]> {
+        const posParams = positions.map(pos => `position[]=${pos}`).join('&');
+        const query = `?season_type=${seasonType}&${posParams}&order_by=pts_ppr`;
+        return this.get<StatsEntry[]>(`projections/nfl/${season}/${week}${query}`, SLEEPER_PRIVATE_API);
+    }
+
+    async getSeasonLeaders(season: number, positions: FantasyPosition[],seasonType: SeasonType = "regular"): Promise<StatsEntry[]> {
+        const posParams = positions.map(pos => `position[]=${pos}`).join('&');
+        const query = `?season_type=${seasonType}&${posParams}&order_by=pts_ppr`;
+        return this.get<StatsEntry[]>(`stats/nfl/${season}${query}`, SLEEPER_PRIVATE_API);
+    }
+
+    async getSeasonProjectionLeaders(season: number, positions: FantasyPosition[], seasonType: SeasonType = "regular"): Promise<StatsEntry[]> {
+        const posParams = positions.map(pos => `position[]=${pos}`).join('&');
+        const query = `?season_type=${seasonType}&${posParams}&order_by=pts_ppr`;
+        return this.get<StatsEntry[]>(`projections/nfl/${season}${query}`, SLEEPER_PRIVATE_API);
     }
 }

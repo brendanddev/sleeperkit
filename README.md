@@ -55,7 +55,6 @@ These power Sleeper's own frontend. They work, but carry no stability guarantee.
 - Team depth charts
 - Per-player stats and projections, by week or season
 - Weekly leaders across positions
-- League-wide roster percentages
 
 ## Caching
 

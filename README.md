@@ -1,37 +1,47 @@
-# Fantalyzer
+# sleeperkit
 
-A personal fantasy football edge system.
+A typed TypeScript client for the [Sleeper](https://sleeper.com) fantasy football API.
+Covers the documented REST API plus several undocumented endpoints used by Sleeper's
+own frontend, with local caching for the large player dataset.
 
-> Work In Progress...
+Unofficial and not affiliated with Sleeper.
 
-## Setup
+> Early development. The API may change.
 
-```bash
-npm install
-cp .env.example .env    # Add your league IDs
-npm run ingest
-```
+## What's covered
 
-Dashboard:
+**Documented API** (`api.sleeper.app/v1`)
+- Users, leagues, rosters, matchups
+- Full player dataset, with a 24-hour disk and memory cache
+- Trending adds and drops
+- NFL state
 
-```bash
-cd web
-npm install
-npm run dev
-```
+**Undocumented API** (`api.sleeper.com`)
 
-## Structure
+These power Sleeper's own frontend. They work, but carry no stability guarantee.
 
-```
-fantalyzer/
-├── data/
-├── web/                # Next.js dashboard
-├── src/                   
-│   ├── ingest/         # Ingests NFL fantasy data from Sleeper
-│   ├── config/         # App configuration
-│   ├── constants.ts    # Constants used throughout the app
-```
+- Team depth charts
+- Per-player stats and projections, by week or season
+- Weekly leaders across positions
+- League-wide roster percentages
 
-## Coming Soon
+## Caching
 
-TBD...
+`getPlayers()` returns the full player dataset, around 5MB. Sleeper asks that it
+not be fetched more than once a day, so it's cached to disk and held in memory
+for the process lifetime.
+
+## Notes on the Sleeper API
+
+Things worth knowing, learned the hard way:
+
+- Unknown query parameters are ignored rather than rejected. `position=DEF` on the
+  trending endpoint looks like it filters, and doesn't.
+- Missing resources return `200` with a `null` body, not a `404`.
+- Points are split into whole and hundredths fields (`fpts` + `fpts_decimal`).
+- Rate limit is 1000 requests per minute.
+- There is no write API — roster moves can't be automated.
+
+## License
+
+MIT

@@ -8,8 +8,6 @@ node_modules/
 # Build output
 dist/
 old/
-.next/
-out/
 build/
 
 # Data cache
@@ -17,12 +15,10 @@ data/
 
 # TS
 *.tsbuildinfo
-next-env.d.ts
 
 # Misc
 .DS_Store
 *.pem
-.vercel
 
 # Debug
 npm-debug.log*

@@ -23,3 +23,6 @@ data/
 # Debug
 npm-debug.log*
 yarn-*.log*
+
+# Tar
+*.tgz

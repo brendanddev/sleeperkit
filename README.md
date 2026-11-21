@@ -8,6 +8,38 @@ Unofficial and not affiliated with Sleeper.
 
 > Early development. The API may change.
 
+## Install
+
+```bash
+npm install sleeperkit
+```
+
+## Usage
+
+```ts
+import { SleeperClient } from "sleeperkit";
+
+const client = new SleeperClient();
+
+const state = await client.getNflState();
+const rosters = await client.getRosters("1395543914030596096");
+
+// The player dataset is cached to disk and memory.
+const players = await client.getPlayers();
+console.log(players["9493"].full_name);
+
+// Stats and projections need an explicit season.
+const weeks = await client.getPlayerStatsByWeek("9493", Number(state.season));
+```
+
+### Options
+
+```ts
+new SleeperClient({
+  cacheDir: "/tmp/sleeper",   // Where the player cache is written, default "data".
+});
+```
+
 ## What's covered
 
 **Documented API** (`api.sleeper.app/v1`)

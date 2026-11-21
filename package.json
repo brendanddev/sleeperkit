@@ -1,6 +1,6 @@
 {
   "name": "sleeperkit",
-  "version": "0.6.0",
+  "version": "0.1.0",
   "description": "Typed TypeScript client for the Sleeper fantasy football API, including undocumented endpoints.",
   "type": "module",
   "main": "./dist/index.js",
@@ -19,6 +19,7 @@
     "clean": "rm -rf dist",
     "rebuild": "npm run clean && tsc",
     "watch": "tsc --watch --preserveWatchOutput",
+    "scratch": "tsx scripts/main.ts",
     "prepublishOnly": "npm run rebuild"
   },
   "keywords": [
@@ -41,6 +42,7 @@
   "homepage": "https://github.com/brendanddev/sleeperkit#readme",
   "devDependencies": {
     "@types/node": "^22.20.2",
+    "tsx": "^4.23.13",
     "typescript": "^7.0.2"
   }
 }

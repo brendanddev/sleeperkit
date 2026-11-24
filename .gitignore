@@ -16,13 +16,13 @@ data/
 # TS
 *.tsbuildinfo
 
-# Misc
-.DS_Store
-*.pem
-
 # Debug
 npm-debug.log*
 yarn-*.log*
 
 # Tar
 *.tgz
+
+# Misc
+.DS_Store
+*.pem

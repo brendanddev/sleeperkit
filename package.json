@@ -19,7 +19,7 @@
     "clean": "rm -rf dist",
     "rebuild": "npm run clean && tsc",
     "watch": "tsc --watch --preserveWatchOutput",
-    "scratch": "tsx scripts/main.ts",
+    "scratch": "tsx src/index.ts",
     "prepublishOnly": "npm run rebuild"
   },
   "keywords": [

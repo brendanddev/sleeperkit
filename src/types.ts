@@ -93,3 +93,7 @@ export interface User {
     avatar: string | null;
     display_name: string;
 }
+
+export interface Player {
+    player_id: string;
+}

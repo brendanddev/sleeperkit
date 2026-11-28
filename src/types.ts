@@ -96,4 +96,29 @@ export interface User {
 
 export interface Player {
     player_id: string;
+    full_name: string;
+    first_name: string;
+    last_name: string;
+    team: NflTeam;
+    injury_status: string;
+    injury_body_part: string;
+    fantasy_positions: string[];
+    news_updated: number;
+    search_full_name: string;
+    depth_chart_order: number;
+    active: boolean;
+    sport: string;
+    rotowire_id: number;
+    stats_id: number;
+    status: string;
+    espn_id: number | null;
+    fantasy_data_id: number;
+    age: number;
+    wish_id: number;
+    sportradar_id: string;
+    years_exp: number;
+    birth_date: string;
+    position: string;
+    number: number;
+    practice_participation: string | null;
 }

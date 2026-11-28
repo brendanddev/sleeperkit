@@ -86,4 +86,9 @@ export class SleeperClient {
         return players;
     }
 
+    public async getPlayerById(playerId: string): Promise<Player | undefined> {
+        const playerMap = await this.getPlayers();
+        return playerMap[playerId];
+    }
+
 }
